@@ -94,12 +94,23 @@ export const sendImage = () => {
     }
   }
 
+  // 썸네일 + 상세이미지
   function extractDetailImageFromElement(element?: any) {
     // extract detail
+    const src = element.src
+      ? element.src
+      : element.getAttribute("data-lazyload-src");
+
+    const imgWidth = element.naturalWidth
+      ? element.naturalWidth
+      : element.width;
+    const imgHeight = element.naturalHeight
+      ? element.naturalHeight
+      : element.height;
 
     if (element.tagName.toLowerCase() === "img") {
       // 링크 이미지 제외
-      if (element.getAttribute("data-src")) {
+      if (element.getAttribute("data-src") && !src) {
         return element.getAttribute("data-src");
       }
 
@@ -107,14 +118,9 @@ export const sendImage = () => {
         return;
       }
 
-      const src = element.src
-        ? element.src
-        : element.getAttribute("data-lazyload-src");
       const hashIndex = src.indexOf("#");
-      const imgWidth = element.naturalWidth;
-      const imgHeight = element.naturalHeight;
-
-      if (imgWidth > 290 && imgWidth < 1300) {
+      // TODO 중복제거
+      if (imgWidth > 390 && imgWidth < 1300 && imgHeight > 100) {
         return hashIndex >= 0 ? src.substr(0, hashIndex) : src;
       }
     }
@@ -166,9 +172,33 @@ export const sendImage = () => {
     return !!value;
   }
 
+  // const uniqueArr = (imgurl:string) => {
+  //   const imgUrlArr = imgurl.split("/");
+
+  //   let uniqueArr = [];
+  //   imgUrlArr.forEach((element: any) => {
+  //     if (!uniqueArr.includes(element)) {
+  //       uniqueArr.push(element);
+  //     }
+  //   });
+
+  //   return uniqueArr;
+  // };
+
+  // const uniqueArr = dupArr.filter((element, index) => {
+  //   return dupArr.indexOf(element) === index;
+  // });
+
+  // const imgUrlArr = src.split("/");
+  // console.log('마지막 url',imgUrlArr[imgUrlArr.length - 2]);
+
   chrome.runtime.sendMessage({
     type: "sendImages",
-    allImages: extractImagesFromSelector("img, image, a, [class], [style]"),
+    //allImages: extractImagesFromSelector("img, image, a, [class], [style]"),
+    allImages: extractImagesFromSelector(
+      "img, image, a, [class], [style]",
+      "detailImages"
+    ),
     linkedImages: extractImagesFromSelector("a"),
     imgTagImage: extractImagesFromSelector("img", "imageTagImg"),
     thumbnail: extractImagesFromSelector("img", "thumbnail"),

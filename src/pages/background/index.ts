@@ -1,4 +1,4 @@
-console.log("background loaded");
+console.log("background loaded2222");
 
 var onMessageListener = function (
   message: any,
@@ -14,10 +14,10 @@ var onMessageListener = function (
 };
 chrome.runtime.onMessage.addListener(onMessageListener);
 
-function start() {
-  chrome.tabs.executeScript({
-    code: "window.scroll(0, document.body.scrollHeight);",
-  });
-}
+// function start() {
+//   chrome.tabs.executeScript({
+//     code: "window.scroll(0, document.body.scrollHeight);",
+//   });
+// }
 
-start();
+// start();
