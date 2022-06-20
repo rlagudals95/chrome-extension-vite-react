@@ -5,12 +5,15 @@ import React, {
   useRef,
   useMemo,
 } from "react";
-import ReactDOM from "react-dom";
 import { isIncludedIn, unique } from "../../functions/utils";
 import { useRunAfterUpdate } from "../../hooks/useRunAfterUpdate";
+import { DownloadButton } from "@src/components/DownloadButton";
 import * as actions from "../../functions/actions";
 import { sendImage } from "../../functions/sendImage";
 import { Images } from "../../functions/Images";
+import { bglog } from "../../functions/utils";
+import styled from "styled-components";
+import { DownloadConfirmation } from "@src/components/DownloadConfirmation";
 import "../../style/main.css";
 
 const initialOptions = localStorage;
@@ -19,8 +22,11 @@ const Popup = () => {
   const [count, setCount] = useState(0);
   const [currentURL, setCurrentURL] = useState<string>();
   const [options, setOptions] = useState(initialOptions);
+  const [userInfo, setUserInfo] = useState("유저인포");
 
   useEffect(() => {
+    const test = localStorage.getItem("lastExpandableTipsOpenTime") as string;
+    setUserInfo(test);
     chrome.action.setBadgeText({ text: count.toString() });
   }, [count]);
 
@@ -48,18 +54,35 @@ const Popup = () => {
   };
 
   // getImaeges
+  const [thumbnail, setThumbnail] = useState<any>([]);
   const [allImages, setAllImages] = useState<any>([]);
+  const [detailImages, setDetailImages] = useState<any>([]);
   const [linkedImages, setLinkedImages] = useState<any>([]);
   const [selectedImages, setSelectedImages] = useState([]);
-  const [visibleImages, setVisibleImages] = useState([]);
+  const [visibleImages, setVisibleImages] = useState<any>([]);
+  const [imgTagImage, setImgTagImage] = useState<any>([]);
 
   useEffect(() => {
     const updatePopupData = (message: any) => {
       if (message.type !== "sendImages") return;
 
+      setVisibleImages((allImages: any) =>
+        unique([...allImages, ...message.allImages])
+      );
+
       setAllImages((allImages: any) =>
         unique([...allImages, ...message.allImages])
       );
+
+      setImgTagImage((imgTagImage: any) =>
+        unique([...imgTagImage, ...message.imgTagImage])
+      );
+
+      setDetailImages((detailImages: any) =>
+        unique([...detailImages, ...message.detailImages])
+      );
+      // 썸네일 후보군으로 나누기..?
+      setThumbnail(unique([message.thumbnail[0]]));
 
       setLinkedImages((linkedImages: any) =>
         unique([...linkedImages, ...message.linkedImages])
@@ -121,7 +144,7 @@ const Popup = () => {
             return true;
           });
           break;
-        // case "wildcard":
+          // case "wildcard":
           filterValue = filterValue
             .replace(/([.^$[\]\\(){}|-])/g, "\\$1")
             .replace(/([?*+])/, ".$1");
@@ -184,36 +207,40 @@ const Popup = () => {
     setDownloadIsInProgress(false);
   }
 
+  // TODO 클라우드 업로드 함수
+
   const runAfterUpdate = useRunAfterUpdate();
 
-  //
   return (
     <>
-      {/* <style>{MainCss}</style> */}
-      <ul style={{ minWidth: "600px", maxWidth: "800px" }}>
-        {/* <li>Current URL: {allImages}sss</li>
-        <li>Current Time: {new Date().toLocaleTimeString()}</li> */}
-      </ul>
-      {/* <button
-        onClick={() => setCount(count + 1)}
-        style={{ marginRight: "5px" }}
-      >
-        count up
-      </button> */}
+      <DownloadButton
+        disabled={imagesToDownload.length === 0}
+        loading={downloadIsInProgress}
+        onClick={maybeDownloadImages}
+      />
 
-      {/* {visibleImages.map((url: string, index: number) => {
-        return (
-          <img
-            key={index}
-            src={url}
-            style={{ width: "200px", height: "200px", objectFit: "cover" }}
+      {downloadConfirmationIsShown && (
+        <>
+          <DownloadConfirmation
+            style={""}
+            onCheckboxChange={({ currentTarget: { checked } }) => {
+              setOptions((options) => ({
+                ...options,
+                show_download_confirmation: (!checked).toString(),
+              }));
+            }}
+            onClose={() => setDownloadConfirmationIsShown(false)}
+            onConfirm={downloadImages}
           />
-        );
-      })} */}
+        </>
+      )}
 
       <Images
         options={options}
+        thumbnail={thumbnail}
         visibleImages={visibleImages}
+        setImgTagImage={setImgTagImage}
+        detailImages={detailImages}
         selectedImages={selectedImages}
         imagesToDownload={imagesToDownload}
         setSelectedImages={setSelectedImages}
@@ -226,3 +253,5 @@ const Popup = () => {
 };
 
 export default Popup;
+
+const Container = styled.div``;

@@ -12,4 +12,4 @@ function init() {
   root.render(<Newtab />);
 }
 
-init();
+//init();
