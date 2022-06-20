@@ -13,6 +13,10 @@
 
 </div>
 
+## webpack vs vite 
+https://blog.bitsrc.io/vite-is-better-than-webpack-d5dd59610d56
+
+
 ## Table of Contents
 
 - [Intro](#intro)
