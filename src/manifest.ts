@@ -36,6 +36,7 @@ const manifest: ManifestType = {
       "webRequestBlocking",
       "http://*/*",
       "https://*/*",
+      "<all_urls>"
     ],
   },
   permissions: [
@@ -48,6 +49,7 @@ const manifest: ManifestType = {
     "webRequestBlocking",
     "http://*/*",
     "https://*/*",
+    "<all_urls>"
   ],
   devtools_page: "src/pages/devtools/index.html",
   web_accessible_resources: [

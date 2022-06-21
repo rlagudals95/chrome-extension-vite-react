@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useRef,
   useMemo,
+  useLayoutEffect,
 } from "react";
 import { isIncludedIn, unique } from "../../functions/utils";
 import { useRunAfterUpdate } from "../../hooks/useRunAfterUpdate";
@@ -15,8 +16,13 @@ import { bglog } from "../../functions/utils";
 import styled from "styled-components";
 import { DownloadConfirmation } from "@src/components/DownloadConfirmation";
 import "../../style/main.css";
+import scrollAction from "@src/functions/scrollAction";
 
 const initialOptions = localStorage;
+const scrollHeight = window.scrollY;
+const winowHeight = window.innerHeight;
+const totalHeight = document.body.offsetHeight;
+const isBottom = winowHeight + scrollHeight === totalHeight;
 
 const Popup = () => {
   const [count, setCount] = useState(0);
@@ -33,6 +39,18 @@ const Popup = () => {
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       setCurrentURL(tabs[0].url);
+    });
+
+    chrome.windows.getCurrent((currentWindow) => {
+      chrome.tabs.query(
+        { active: true, windowId: currentWindow.id },
+        (activeTabs: any) => {
+          chrome.scripting.executeScript({
+            target: { tabId: activeTabs[0].id },
+            func: scrollAction,
+          });
+        }
+      );
     });
   }, []);
 
@@ -96,6 +114,7 @@ const Popup = () => {
     chrome.runtime.onMessage.addListener(updatePopupData);
 
     // Get images on the page
+
     chrome.windows.getCurrent((currentWindow) => {
       chrome.tabs.query(
         { active: true, windowId: currentWindow.id },
@@ -107,6 +126,12 @@ const Popup = () => {
         }
       );
     });
+
+    function scrollBottom() {
+      window.scroll(0, document.body.scrollHeight);
+    }
+
+    // scrollDown
 
     return () => {
       chrome.runtime.onMessage.removeListener(updatePopupData);
@@ -213,11 +238,11 @@ const Popup = () => {
 
   return (
     <>
-      <DownloadButton
+      {/* <DownloadButton
         disabled={imagesToDownload.length === 0}
         loading={downloadIsInProgress}
         onClick={maybeDownloadImages}
-      />
+      /> */}
 
       {downloadConfirmationIsShown && (
         <>

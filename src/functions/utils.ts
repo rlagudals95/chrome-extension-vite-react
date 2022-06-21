@@ -20,3 +20,7 @@ export const  bglog = function(obj: any) {
     chrome.runtime.sendMessage({type: "bglog", obj: obj});
   }
 }
+
+export const random = (min, max) => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
